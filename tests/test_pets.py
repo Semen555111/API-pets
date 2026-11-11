@@ -46,10 +46,19 @@ def test_delete_pet(api_context, create_pet) -> None:
     response = api_context.get(f'pet/{updated_pet["id"]}')
     assert response.status == 404, response.text()
 
-@pytest.mark.parametrize('number', 'expected',
+@pytest.mark.parametrize('number,expected',
                          [pytest.param(-1, 404, id='404'),
                           pytest.param('abc', 400, id='400'),
                           pytest.param('', 400, id='400')])
 def test_invalid_pet_id(api_context, number, expected) -> None:
     response = api_context.get(f'pet/{number}')
     assert response.status == expected, response.text()
+
+@pytest.mark.parametrize('sta, invalid_status',
+                         [pytest.param('not_a_status', 400, id='400'),
+                          pytest.param('', 400, id='400')])
+def test_invalid_status(api_context, create_pet, sta, invalid_status) -> None:
+    updated_pet = create_pet.copy()
+    response = api_context.get('pet/findByStatus',
+                               params={'status' : sta})
+    assert response.status == invalid_status, response.text()
